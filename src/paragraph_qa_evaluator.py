@@ -150,89 +150,87 @@ class ParagraphQAEvaluator:
         
         return self.context, self.paragraphs
     
-    def validate_paragraph_answer(self, question: str, expected_answer: str, 
-                                target_paragraph_index: int) -> Dict[str, Any]:
-        """
-        Ask a question and validate if answer comes from the target paragraph.
+def validate_paragraph_answer(self, question: str, expected_answer: str, 
+                            target_paragraph_index: int) -> Dict[str, Any]:
+    """
+    Ask a question and validate if answer comes from the target paragraph.
+    
+    Args:
+        question: Question to ask the model
+        expected_answer: The expected correct answer
+        target_paragraph_index: Which paragraph should contain the answer (0-based index)
         
-        Args:
-            question: Question to ask the model
-            expected_answer: The expected correct answer
-            target_paragraph_index: Which paragraph should contain the answer (0-based index)
-            
-        Returns:
-            Dict: Evaluation results including score and validation metrics
-            
-        Raises:
-            RuntimeError: If model is not loaded
-            ValueError: If context not set or invalid paragraph index
-            
-        Example:
-            >>> result = evaluator.validate_paragraph_answer(
-            ...     question="What do models require?",
-            ...     expected_answer="computational resources",
-            ...     target_paragraph_index=1
-            ... )
-        """
-        if not self.qa_pipeline:
-            raise RuntimeError("Model not loaded. Call load_model() first.")
+    Returns:
+        Dict: Evaluation results including score and validation metrics
         
-        if not self.context:
-            raise ValueError("Context not set. Call create_three_paragraph_document() or create_custom_document() first.")
+    Raises:
+        RuntimeError: If model is not loaded
+        ValueError: If context not set or invalid paragraph index
+    """
+    # First validate input parameters
+    if not question or not isinstance(question, str):
+        raise ValueError("Question must be a non-empty string")
+    
+    if not self.context:
+        raise ValueError("Context not set. Call create_three_paragraph_document() or create_custom_document() first.")
+    
+    if target_paragraph_index < 0 or target_paragraph_index >= len(self.paragraphs):
+        raise ValueError(
+            f"Invalid paragraph index: {target_paragraph_index}. "
+            f"Must be between 0 and {len(self.paragraphs)-1}"
+        )
+    
+    # Then check if model is loaded
+    if not self.qa_pipeline:
+        raise RuntimeError("Model not loaded. Call load_model() first.")
+    
+    try:
+        # Ask the question using the full context
+        result = self.qa_pipeline(question=question, context=self.context)
         
-        if target_paragraph_index < 0 or target_paragraph_index >= len(self.paragraphs):
-            raise ValueError(
-                f"Invalid paragraph index: {target_paragraph_index}. "
-                f"Must be between 0 and {len(self.paragraphs)-1}"
-            )
+        # Validate if answer comes from target paragraph
+        answer_from_target = self._is_answer_from_paragraph(
+            result['answer'], 
+            result['start'], 
+            result['end'], 
+            target_paragraph_index
+        )
         
-        try:
-            # Ask the question using the full context
-            result = self.qa_pipeline(question=question, context=self.context)
-            
-            # Validate if answer comes from target paragraph
-            answer_from_target = self._is_answer_from_paragraph(
-                result['answer'], 
-                result['start'], 
-                result['end'], 
-                target_paragraph_index
-            )
-            
-            # Check if answer content matches expected
-            answer_correct = self._check_answer_correctness(result['answer'], expected_answer)
-            
-            evaluation_result = {
-                'question': question,
-                'model_answer': result['answer'],
-                'expected_answer': expected_answer,
-                'score': result['score'],
-                'answer_position': (result['start'], result['end']),
-                'target_paragraph_index': target_paragraph_index,
-                'answer_from_target_paragraph': answer_from_target,
-                'answer_correct': answer_correct,
-                'success': answer_from_target and answer_correct,
-                'context_length': len(self.context),
-                'paragraph_count': len(self.paragraphs)
-            }
-            
-            return evaluation_result
-            
-        except Exception as e:
-            self.logger.error(f"Error during question evaluation: {e}")
-            return {
-                'question': question,
-                'model_answer': 'ERROR',
-                'expected_answer': expected_answer,
-                'score': 0.0,
-                'answer_position': (0, 0),
-                'target_paragraph_index': target_paragraph_index,
-                'answer_from_target_paragraph': False,
-                'answer_correct': False,
-                'success': False,
-                'error': str(e),
-                'context_length': len(self.context),
-                'paragraph_count': len(self.paragraphs)
-            }
+        # Check if answer content matches expected
+        answer_correct = self._check_answer_correctness(result['answer'], expected_answer)
+        
+        evaluation_result = {
+            'question': question,
+            'model_answer': result['answer'],
+            'expected_answer': expected_answer,
+            'score': result['score'],
+            'answer_position': (result['start'], result['end']),
+            'target_paragraph_index': target_paragraph_index,
+            'answer_from_target_paragraph': answer_from_target,
+            'answer_correct': answer_correct,
+            'success': answer_from_target and answer_correct,
+            'context_length': len(self.context),
+            'paragraph_count': len(self.paragraphs)
+        }
+        
+        return evaluation_result
+        
+    except Exception as e:
+        self.logger.error(f"Error during question evaluation: {e}")
+        return {
+            'question': question,
+            'model_answer': 'ERROR',
+            'expected_answer': expected_answer,
+            'score': 0.0,
+            'answer_position': (0, 0),
+            'target_paragraph_index': target_paragraph_index,
+            'answer_from_target_paragraph': False,
+            'answer_correct': False,
+            'success': False,
+            'error': str(e),
+            'context_length': len(self.context),
+            'paragraph_count': len(self.paragraphs)
+        }
     
     def _is_answer_from_paragraph(self, answer: str, start_pos: int, end_pos: int, 
                                 paragraph_index: int) -> bool:
