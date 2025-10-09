@@ -1,6 +1,16 @@
+"""
+Extended testing functionality for Paragraph QA Evaluator.
+"""
+
 import json
 from typing import List, Dict, Tuple
-from paragraph_qa_evaluator import ParagraphQAEvaluator
+
+try:
+    # Для импорта из пакета
+    from .paragraph_qa_evaluator import ParagraphQAEvaluator
+except ImportError:
+    # Для прямого запуска файла
+    from paragraph_qa_evaluator import ParagraphQAEvaluator
 
 
 class ExtendedQATesting:
@@ -29,9 +39,7 @@ class ExtendedQATesting:
         if len(paragraphs) < 2:
             raise ValueError("Need at least 2 paragraphs for meaningful testing")
         
-        self.evaluator.paragraphs = [p.strip() for p in paragraphs]
-        self.evaluator.context = "\n\n".join(self.evaluator.paragraphs)
-        return self.evaluator.context, self.evaluator.paragraphs
+        return self.evaluator.create_custom_document(paragraphs)
     
     def run_multiple_tests(self, test_cases: List[Dict]) -> List[Dict]:
         """
@@ -126,6 +134,7 @@ class ExtendedQATesting:
             print(f"  From Target: {result['answer_from_target_paragraph']}")
             print(f"  Correct: {result['answer_correct']}")
 
+
 class BatchTester:
     """Batch testing functionality for comprehensive evaluation."""
     
@@ -196,6 +205,87 @@ class BatchTester:
         
         self.all_results.extend(results)
         return results
+    
+    def generate_detailed_report(self, results: list) -> dict:
+        """
+        Generate detailed performance report.
+        
+        Args:
+            results: List of test results
+            
+        Returns:
+            dict: Comprehensive report
+        """
+        if not results:
+            return {}
+        
+        total_tests = len(results)
+        successful_tests = sum(1 for r in results if r.get('success', False))
+        avg_score = sum(r.get('score', 0) for r in results) / total_tests
+        
+        # Document-level statistics
+        doc_stats = {}
+        for result in results:
+            doc_name = result.get('document_name', 'unknown')
+            if doc_name not in doc_stats:
+                doc_stats[doc_name] = {
+                    'total': 0,
+                    'successful': 0,
+                    'total_score': 0
+                }
+            
+            doc_stats[doc_name]['total'] += 1
+            doc_stats[doc_name]['total_score'] += result.get('score', 0)
+            
+            if result.get('success'):
+                doc_stats[doc_name]['successful'] += 1
+        
+        # Calculate percentages
+        for doc_name in doc_stats:
+            doc_stats[doc_name]['success_rate'] = (
+                doc_stats[doc_name]['successful'] / doc_stats[doc_name]['total'] * 100
+            )
+            doc_stats[doc_name]['avg_score'] = (
+                doc_stats[doc_name]['total_score'] / doc_stats[doc_name]['total']
+            )
+        
+        report = {
+            'overall': {
+                'total_tests': total_tests,
+                'successful_tests': successful_tests,
+                'success_rate': (successful_tests / total_tests) * 100,
+                'average_score': avg_score
+            },
+            'document_stats': doc_stats,
+            'detailed_results': results
+        }
+        
+        return report
+    
+    def print_batch_report(self, report: dict) -> None:
+        """Print formatted batch test report."""
+        if not report:
+            return
+        
+        overall = report['overall']
+        
+        print("\n" + "="*80)
+        print("BATCH TESTING REPORT")
+        print("="*80)
+        
+        print(f"\nOVERALL STATISTICS:")
+        print(f"   Total Tests: {overall['total_tests']}")
+        print(f"   Successful: {overall['successful_tests']}")
+        print(f"   Success Rate: {overall['success_rate']:.1f}%")
+        print(f"   Average Score: {overall['average_score']:.4f}")
+        
+        print(f"\nDOCUMENT PERFORMANCE:")
+        for doc_name, stats in report['document_stats'].items():
+            print(f"\n   {doc_name}:")
+            print(f"      Success Rate: {stats['success_rate']:.1f}% "
+                  f"({stats['successful']}/{stats['total']})")
+            print(f"      Average Score: {stats['avg_score']:.4f}")
+
 
 # Example usage
 if __name__ == "__main__":
