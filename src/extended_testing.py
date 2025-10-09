@@ -126,6 +126,76 @@ class ExtendedQATesting:
             print(f"  From Target: {result['answer_from_target_paragraph']}")
             print(f"  Correct: {result['answer_correct']}")
 
+class BatchTester:
+    """Batch testing functionality for comprehensive evaluation."""
+    
+    def __init__(self, model_name: str = "AlexKay/xlm-roberta-large-qa-multilingual-finedtuned-ru"):
+        self.evaluator = ParagraphQAEvaluator(model_name)
+        self.all_results = []
+    
+    def load_model(self) -> bool:
+        """Load the QA model."""
+        return self.evaluator.load_model()
+    
+    def load_test_cases_from_file(self, filepath: str) -> dict:
+        """
+        Load test cases from JSON file.
+        
+        Args:
+            filepath: Path to JSON file with test cases
+            
+        Returns:
+            dict: Loaded test cases
+        """
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error loading test cases from {filepath}: {e}")
+            return {}
+    
+    def run_batch_test(self, test_suite: dict) -> list:
+        """
+        Run a batch of tests from test suite definition.
+        
+        Args:
+            test_suite: Dictionary containing test suite definition
+            
+        Returns:
+            list: Results from all test cases
+        """
+        if not self.evaluator.qa_pipeline:
+            print("Model not loaded")
+            return []
+        
+        results = []
+        
+        for document_name, document_data in test_suite.get('documents', {}).items():
+            print(f"\nTesting Document: {document_name}")
+            
+            # Create document
+            self.evaluator.create_custom_document(document_data['paragraphs'])
+            
+            # Run test cases for this document
+            for i, test_case in enumerate(document_data.get('test_cases', [])):
+                print(f"  Test {i+1}: {test_case['question']}")
+                
+                result = self.evaluator.validate_paragraph_answer(
+                    question=test_case['question'],
+                    expected_answer=test_case['expected_answer'],
+                    target_paragraph_index=test_case['target_paragraph']
+                )
+                
+                result['document_name'] = document_name
+                result['test_case_id'] = f"{document_name}_{i+1}"
+                results.append(result)
+                
+                # Print quick status
+                status = "PASS" if result.get('success') else "FAIL"
+                print(f"    {status} | Score: {result['score']:.4f}")
+        
+        self.all_results.extend(results)
+        return results
 
 # Example usage
 if __name__ == "__main__":
