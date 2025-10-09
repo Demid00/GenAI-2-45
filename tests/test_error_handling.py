@@ -8,6 +8,7 @@ robust operation under different failure conditions.
 import unittest
 import sys
 import os
+from unittest.mock import Mock, patch
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.paragraph_qa_evaluator import ParagraphQAEvaluator
@@ -24,42 +25,43 @@ class TestErrorHandling(unittest.TestCase):
         """Test behavior with invalid model name."""
         # This should not crash but return False
         invalid_evaluator = ParagraphQAEvaluator(model_name="invalid/model/name")
-        result = invalid_evaluator.load_model()
-        self.assertFalse(result)
+        with patch('transformers.pipeline') as mock_pipeline:
+            mock_pipeline.side_effect = Exception("Model not found")
+            result = invalid_evaluator.load_model()
+            self.assertFalse(result)
     
     def test_empty_question_validation(self):
         """Test validation with empty question."""
         self.evaluator.create_three_paragraph_document()
         
-        # Mock the pipeline to avoid actual model loading
-        self.evaluator.qa_pipeline = True  # Simulate loaded model
-        
-        with self.assertRaises(ValueError):
-            self.evaluator.validate_paragraph_answer("", "test answer", 1)
+        # Mock the pipeline properly
+        with patch.object(self.evaluator, 'qa_pipeline', None):
+            with self.assertRaises(ValueError):
+                self.evaluator.validate_paragraph_answer("", "test answer", 1)
     
     def test_none_question_validation(self):
         """Test validation with None question."""
         self.evaluator.create_three_paragraph_document()
-        self.evaluator.qa_pipeline = True
         
-        with self.assertRaises(ValueError):
-            self.evaluator.validate_paragraph_answer(None, "test answer", 1)
+        with patch.object(self.evaluator, 'qa_pipeline', None):
+            with self.assertRaises(ValueError):
+                self.evaluator.validate_paragraph_answer(None, "test answer", 1)
     
     def test_negative_paragraph_index(self):
         """Test validation with negative paragraph index."""
         self.evaluator.create_three_paragraph_document()
-        self.evaluator.qa_pipeline = True
         
-        with self.assertRaises(ValueError):
-            self.evaluator.validate_paragraph_answer("test question", "test answer", -1)
+        with patch.object(self.evaluator, 'qa_pipeline', None):
+            with self.assertRaises(ValueError):
+                self.evaluator.validate_paragraph_answer("test question", "test answer", -1)
     
     def test_out_of_bounds_paragraph_index(self):
         """Test validation with out-of-bounds paragraph index."""
         self.evaluator.create_three_paragraph_document()
-        self.evaluator.qa_pipeline = True
         
-        with self.assertRaises(ValueError):
-            self.evaluator.validate_paragraph_answer("test question", "test answer", 10)
+        with patch.object(self.evaluator, 'qa_pipeline', None):
+            with self.assertRaises(ValueError):
+                self.evaluator.validate_paragraph_answer("test question", "test answer", 10)
     
     def test_empty_paragraphs_list(self):
         """Test creating document with empty paragraphs list."""
@@ -147,15 +149,30 @@ class TestParagraphBoundaryDetection(unittest.TestCase):
     
     def test_answer_from_paragraph_logic(self):
         """Test the logic for detecting if answer comes from target paragraph."""
-        # Mock answer positions - these would normally come from the model
-        # For paragraph 1 (index 0)
+        # Test with positions that should be within paragraphs
+        # These positions are approximate and would need adjustment based on actual context length
+        
+        # For paragraph 0 (index 0) - positions within first paragraph
+        context = self.evaluator.context
+        para1_start = 0
+        para1_end = len(self.test_paragraphs[0])
+        
         self.assertTrue(self.evaluator._is_answer_from_paragraph(
-            "some content", 10, 22, 0
+            "some content", 
+            para1_start + 5, 
+            para1_start + 16, 
+            0
         ))
         
-        # For paragraph 2 (index 1)
+        # For paragraph 1 (index 1)
+        para2_start = len(self.test_paragraphs[0]) + 2  # +2 for "\n\n"
+        para2_end = para2_start + len(self.test_paragraphs[1])
+        
         self.assertTrue(self.evaluator._is_answer_from_paragraph(
-            "different information", 50, 70, 1
+            "different information", 
+            para2_start + 10, 
+            para2_start + 30, 
+            1
         ))
 
 
@@ -163,17 +180,33 @@ class TestResultHandling(unittest.TestCase):
     """Test result handling and reporting."""
     
     def test_error_result_structure(self):
-        """Test that error results have consistent structure."""
+        """Test that error results have consistent structure when model not loaded."""
         evaluator = ParagraphQAEvaluator()
         evaluator.create_three_paragraph_document()
         
-        # Simulate an error by not loading the model
+        # This should raise RuntimeError, not return error result
+        with self.assertRaises(RuntimeError):
+            evaluator.validate_paragraph_answer("test", "answer", 1)
+    
+    def test_error_result_with_mock_failure(self):
+        """Test error result structure when model call fails."""
+        evaluator = ParagraphQAEvaluator()
+        evaluator.create_three_paragraph_document()
+        
+        # Mock a loaded pipeline that raises an exception
+        mock_pipeline = Mock()
+        mock_pipeline.side_effect = Exception("Mocked failure")
+        evaluator.qa_pipeline = mock_pipeline
+        
         result = evaluator.validate_paragraph_answer("test", "answer", 1)
         
+        # Check error result structure
         self.assertIn('error', result)
         self.assertFalse(result['success'])
         self.assertEqual(result['model_answer'], 'ERROR')
         self.assertEqual(result['score'], 0.0)
+        self.assertEqual(result['question'], 'test')
+        self.assertEqual(result['expected_answer'], 'answer')
 
 
 if __name__ == '__main__':
