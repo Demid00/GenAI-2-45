@@ -8,8 +8,8 @@ Tests the model's ability to find answers in specific paragraphs when given full
 from .paragraph_qa_evaluator import ParagraphQAEvaluator
 
 __version__ = "1.0.0"
-__author__ = "Your Name"
-__email__ = "your.email@example.com"
+__author__ = "Demid Babikov"
+__email__ = "babikov.demid@gmail.com"
 
 __all__ = [
     "ParagraphQAEvaluator",
