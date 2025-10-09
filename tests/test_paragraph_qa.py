@@ -6,9 +6,10 @@ import unittest
 import sys
 import os
 from unittest.mock import Mock, patch
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from src.paragraph_qa_evaluator import ParagraphQAEvaluator
+# Add src to path and import directly from module
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+from paragraph_qa_evaluator import ParagraphQAEvaluator
 
 
 class TestParagraphQAEvaluator(unittest.TestCase):
@@ -57,22 +58,22 @@ class TestParagraphQAEvaluator(unittest.TestCase):
     def test_answer_correctness_check(self):
         """Test answer correctness validation."""
         # Exact match
-        self.assertTrue(self.evaluator._check_answer_correctness(
+        self.assertTrue(self.evaluator._ParagraphQAEvaluator__check_answer_correctness(
             "computational resources", "computational resources"
         ))
         
         # Substring match
-        self.assertTrue(self.evaluator._check_answer_correctness(
+        self.assertTrue(self.evaluator._ParagraphQAEvaluator__check_answer_correctness(
             "requires computational resources", "computational resources"
         ))
         
         # Word overlap
-        self.assertTrue(self.evaluator._check_answer_correctness(
+        self.assertTrue(self.evaluator._ParagraphQAEvaluator__check_answer_correctness(
             "resources and datasets", "computational resources"
         ))
         
         # No match
-        self.assertFalse(self.evaluator._check_answer_correctness(
+        self.assertFalse(self.evaluator._ParagraphQAEvaluator__check_answer_correctness(
             "completely different", "computational resources"
         ))
 
