@@ -1,0 +1,20 @@
+{
+  "name": "Sample AI Document",
+  "paragraphs": [
+    "Artificial Intelligence (AI) represents one of the most significant technological advancements of our era. It enables machines to perform tasks that typically require human intelligence, such as visual perception, speech recognition, and decision-making.",
+    "Machine learning algorithms improve automatically through experience by finding patterns in data. These algorithms can be categorized into supervised learning, unsupervised learning, and reinforcement learning, each with distinct approaches and applications.",
+    "The future of AI holds tremendous potential but also raises important ethical considerations. Issues like bias in algorithms, job displacement, privacy concerns, and autonomous weapons require careful regulation and ethical frameworks."
+  ],
+  "test_cases": [
+    {
+      "question": "What can AI enable machines to do?",
+      "expected_answer": "perform tasks that typically require human intelligence",
+      "target_paragraph": 0
+    },
+    {
+      "question": "How do machine learning algorithms improve?",
+      "expected_answer": "automatically through experience by finding patterns in data",
+      "target_paragraph": 1
+    }
+  ]
+}
