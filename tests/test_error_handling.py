@@ -9,9 +9,10 @@ import unittest
 import sys
 import os
 from unittest.mock import Mock, patch
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from src.paragraph_qa_evaluator import ParagraphQAEvaluator
+# Add src to path and import directly from module
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+from paragraph_qa_evaluator import ParagraphQAEvaluator
 
 
 class TestErrorHandling(unittest.TestCase):
@@ -82,36 +83,36 @@ class TestErrorHandling(unittest.TestCase):
     def test_answer_correctness_edge_cases(self):
         """Test answer correctness with edge cases."""
         # Empty answers
-        self.assertFalse(self.evaluator._check_answer_correctness("", "expected"))
-        self.assertFalse(self.evaluator._check_answer_correctness("answer", ""))
-        self.assertFalse(self.evaluator._check_answer_correctness("", ""))
+        self.assertFalse(self.evaluator._ParagraphQAEvaluator__check_answer_correctness("", "expected"))
+        self.assertFalse(self.evaluator._ParagraphQAEvaluator__check_answer_correctness("answer", ""))
+        self.assertFalse(self.evaluator._ParagraphQAEvaluator__check_answer_correctness("", ""))
         
         # None answers
-        self.assertFalse(self.evaluator._check_answer_correctness(None, "expected"))
-        self.assertFalse(self.evaluator._check_answer_correctness("answer", None))
-        self.assertFalse(self.evaluator._check_answer_correctness(None, None))
+        self.assertFalse(self.evaluator._ParagraphQAEvaluator__check_answer_correctness(None, "expected"))
+        self.assertFalse(self.evaluator._ParagraphQAEvaluator__check_answer_correctness("answer", None))
+        self.assertFalse(self.evaluator._ParagraphQAEvaluator__check_answer_correctness(None, None))
     
     def test_whitespace_handling(self):
         """Test answer correctness with various whitespace scenarios."""
         # Different whitespace, same content
-        self.assertTrue(self.evaluator._check_answer_correctness(
+        self.assertTrue(self.evaluator._ParagraphQAEvaluator__check_answer_correctness(
             "  computational resources  ",
             "computational resources"
         ))
         
-        self.assertTrue(self.evaluator._check_answer_correctness(
+        self.assertTrue(self.evaluator._ParagraphQAEvaluator__check_answer_correctness(
             "computational\nresources",
             "computational resources"
         ))
     
     def test_case_insensitive_matching(self):
         """Test that answer matching is case insensitive."""
-        self.assertTrue(self.evaluator._check_answer_correctness(
+        self.assertTrue(self.evaluator._ParagraphQAEvaluator__check_answer_correctness(
             "COMPUTATIONAL RESOURCES",
             "computational resources"
         ))
         
-        self.assertTrue(self.evaluator._check_answer_correctness(
+        self.assertTrue(self.evaluator._ParagraphQAEvaluator__check_answer_correctness(
             "Computational Resources",
             "COMPUTATIONAL RESOURCES"
         ))
@@ -165,7 +166,7 @@ class TestParagraphBoundaryDetection(unittest.TestCase):
         para1_start = 0
         para1_end = len(self.test_paragraphs[0])
         
-        self.assertTrue(self.evaluator._is_answer_from_paragraph(
+        self.assertTrue(self.evaluator._ParagraphQAEvaluator__is_answer_from_paragraph(
             "some content", 
             para1_start + 5, 
             para1_start + 16, 
@@ -176,7 +177,7 @@ class TestParagraphBoundaryDetection(unittest.TestCase):
         para2_start = len(self.test_paragraphs[0]) + 2  # +2 for "\n\n"
         para2_end = para2_start + len(self.test_paragraphs[1])
         
-        self.assertTrue(self.evaluator._is_answer_from_paragraph(
+        self.assertTrue(self.evaluator._ParagraphQAEvaluator__is_answer_from_paragraph(
             "different information", 
             para2_start + 10, 
             para2_start + 30, 
@@ -184,7 +185,7 @@ class TestParagraphBoundaryDetection(unittest.TestCase):
         ))
         
         # Test answer not from target paragraph
-        self.assertFalse(self.evaluator._is_answer_from_paragraph(
+        self.assertFalse(self.evaluator._ParagraphQAEvaluator__is_answer_from_paragraph(
             "some content",
             para1_start + 5,
             para1_start + 16,
