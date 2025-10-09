@@ -31,7 +31,7 @@ This project addresses the specific challenge of evaluating whether QA models ca
 ### Quick Setup
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/paragraph_qa_evaluator.git
+git clone https://github.com/Demid00/paragraph_qa_evaluator.git
 cd paragraph_qa_evaluator
 
 # Install dependencies
