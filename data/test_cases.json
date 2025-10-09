@@ -1,0 +1,88 @@
+{
+  "name": "Comprehensive Test Suite",
+  "description": "Multiple test cases across different domains for thorough QA evaluation",
+  "documents": {
+    "Technology_Document": {
+      "description": "Document about modern technology trends",
+      "paragraphs": [
+        "Cloud computing has transformed how businesses operate by providing scalable resources on demand. Services like AWS, Azure, and Google Cloud offer infrastructure, platform, and software as services, enabling companies to focus on their core competencies rather than maintaining physical servers.",
+        "Containerization technologies, particularly Docker and Kubernetes, have revolutionized application deployment and management. Docker packages applications with their dependencies into containers, while Kubernetes orchestrates these containers across clusters, ensuring scalability, reliability, and efficient resource utilization.",
+        "Serverless computing represents the next evolution in cloud services, allowing developers to build applications without managing servers. Functions as a Service (FaaS) platforms automatically scale based on demand and charge only for actual computation time, making them cost-effective for variable workloads."
+      ],
+      "test_cases": [
+        {
+          "question": "What services do cloud providers offer?",
+          "expected_answer": "infrastructure, platform, and software as services",
+          "target_paragraph": 0
+        },
+        {
+          "question": "What does Docker package?",
+          "expected_answer": "applications with their dependencies into containers",
+          "target_paragraph": 1
+        },
+        {
+          "question": "What does serverless computing allow?",
+          "expected_answer": "build applications without managing servers",
+          "target_paragraph": 2
+        }
+      ]
+    },
+    "Biology_Document": {
+      "description": "Document about cellular biology",
+      "paragraphs": [
+        "DNA replication is the biological process of producing two identical replicas of DNA from one original molecule. This process occurs in all living organisms and is the basis for biological inheritance. The replication fork is where replication occurs, with enzymes like DNA polymerase adding nucleotides to growing chains.",
+        "Protein synthesis involves two main stages: transcription and translation. During transcription, DNA is copied into messenger RNA (mRNA) by RNA polymerase. In translation, ribosomes read the mRNA sequence and assemble amino acids into proteins according to the genetic code.",
+        "Cell division includes mitosis and meiosis processes. Mitosis produces two identical daughter cells for growth and repair, while meiosis reduces chromosome number by half to produce gametes for sexual reproduction. Both processes ensure genetic continuity but serve different biological purposes."
+      ],
+      "test_cases": [
+        {
+          "question": "What is DNA replication?",
+          "expected_answer": "biological process of producing two identical replicas of DNA",
+          "target_paragraph": 0
+        },
+        {
+          "question": "What are the main stages of protein synthesis?",
+          "expected_answer": "transcription and translation",
+          "target_paragraph": 1
+        },
+        {
+          "question": "What does mitosis produce?",
+          "expected_answer": "two identical daughter cells",
+          "target_paragraph": 2
+        }
+      ]
+    },
+    "Economics_Document": {
+      "description": "Document about economic principles",
+      "paragraphs": [
+        "Supply and demand is a fundamental economic model that determines price in a competitive market. The law of demand states that quantity demanded varies inversely with price, while the law of supply indicates that quantity supplied varies directly with price. Market equilibrium occurs where supply and demand curves intersect.",
+        "Monetary policy involves central bank actions to control money supply and interest rates to achieve macroeconomic goals. Tools include open market operations, reserve requirements, and discount rates. Expansionary policy increases money supply to stimulate growth, while contractionary policy reduces money supply to control inflation.",
+        "Fiscal policy refers to government spending and taxation decisions to influence economic conditions. During recessions, governments may increase spending or cut taxes to stimulate demand (expansionary fiscal policy). During inflation, they may decrease spending or increase taxes (contractionary fiscal policy) to cool the economy."
+      ],
+      "test_cases": [
+        {
+          "question": "What determines price in a competitive market?",
+          "expected_answer": "supply and demand",
+          "target_paragraph": 0
+        },
+        {
+          "question": "What does monetary policy involve?",
+          "expected_answer": "central bank actions to control money supply and interest rates",
+          "target_paragraph": 1
+        },
+        {
+          "question": "What is fiscal policy?",
+          "expected_answer": "government spending and taxation decisions",
+          "target_paragraph": 2
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "total_documents": 3,
+    "total_test_cases": 9,
+    "domains": ["technology", "biology", "economics"],
+    "created": "2024-01-15",
+    "version": "1.0"
+  }
+}
