@@ -34,34 +34,30 @@ class TestErrorHandling(unittest.TestCase):
         """Test validation with empty question."""
         self.evaluator.create_three_paragraph_document()
         
-        # Mock the pipeline properly
-        with patch.object(self.evaluator, 'qa_pipeline', None):
-            with self.assertRaises(ValueError):
-                self.evaluator.validate_paragraph_answer("", "test answer", 1)
+        # Should raise ValueError before checking model
+        with self.assertRaises(ValueError):
+            self.evaluator.validate_paragraph_answer("", "test answer", 1)
     
     def test_none_question_validation(self):
         """Test validation with None question."""
         self.evaluator.create_three_paragraph_document()
         
-        with patch.object(self.evaluator, 'qa_pipeline', None):
-            with self.assertRaises(ValueError):
-                self.evaluator.validate_paragraph_answer(None, "test answer", 1)
+        with self.assertRaises(ValueError):
+            self.evaluator.validate_paragraph_answer(None, "test answer", 1)
     
     def test_negative_paragraph_index(self):
         """Test validation with negative paragraph index."""
         self.evaluator.create_three_paragraph_document()
         
-        with patch.object(self.evaluator, 'qa_pipeline', None):
-            with self.assertRaises(ValueError):
-                self.evaluator.validate_paragraph_answer("test question", "test answer", -1)
+        with self.assertRaises(ValueError):
+            self.evaluator.validate_paragraph_answer("test question", "test answer", -1)
     
     def test_out_of_bounds_paragraph_index(self):
         """Test validation with out-of-bounds paragraph index."""
         self.evaluator.create_three_paragraph_document()
         
-        with patch.object(self.evaluator, 'qa_pipeline', None):
-            with self.assertRaises(ValueError):
-                self.evaluator.validate_paragraph_answer("test question", "test answer", 10)
+        with self.assertRaises(ValueError):
+            self.evaluator.validate_paragraph_answer("test question", "test answer", 10)
     
     def test_empty_paragraphs_list(self):
         """Test creating document with empty paragraphs list."""
@@ -119,6 +115,26 @@ class TestErrorHandling(unittest.TestCase):
             "Computational Resources",
             "COMPUTATIONAL RESOURCES"
         ))
+    
+    def test_validation_without_context(self):
+        """Test validation when context is not set."""
+        # Should raise ValueError about missing context
+        with self.assertRaises(ValueError) as context:
+            self.evaluator.validate_paragraph_answer("test", "answer", 1)
+        
+        self.assertIn("Context not set", str(context.exception))
+    
+    def test_validation_without_model_after_param_checks(self):
+        """Test that model check happens after parameter validation."""
+        self.evaluator.create_three_paragraph_document()
+        
+        # With invalid parameters, should get ValueError (not RuntimeError)
+        with self.assertRaises(ValueError):
+            self.evaluator.validate_paragraph_answer("", "answer", 1)
+        
+        # With valid parameters but no model, should get RuntimeError
+        with self.assertRaises(RuntimeError):
+            self.evaluator.validate_paragraph_answer("valid question", "answer", 1)
 
 
 class TestParagraphBoundaryDetection(unittest.TestCase):
@@ -137,23 +153,15 @@ class TestParagraphBoundaryDetection(unittest.TestCase):
     
     def test_paragraph_boundary_calculation(self):
         """Test that paragraph boundaries are calculated correctly."""
-        # For our test document, boundaries should be:
-        # Para 0: 0-35
-        # Para 1: 37-78 (35 + 2 for "\n\n" + 41 chars)
-        # Para 2: 80-118 (78 + 2 for "\n\n" + 38 chars)
-        
-        # This is a simplified test - in practice, we'd need to mock the actual positions
-        # For now, just verify the context is constructed correctly
         expected_context = "\n\n".join(self.test_paragraphs)
         self.assertEqual(self.evaluator.context, expected_context)
     
     def test_answer_from_paragraph_logic(self):
         """Test the logic for detecting if answer comes from target paragraph."""
         # Test with positions that should be within paragraphs
-        # These positions are approximate and would need adjustment based on actual context length
-        
-        # For paragraph 0 (index 0) - positions within first paragraph
         context = self.evaluator.context
+        
+        # For paragraph 0 (index 0)
         para1_start = 0
         para1_end = len(self.test_paragraphs[0])
         
@@ -173,6 +181,14 @@ class TestParagraphBoundaryDetection(unittest.TestCase):
             para2_start + 10, 
             para2_start + 30, 
             1
+        ))
+        
+        # Test answer not from target paragraph
+        self.assertFalse(self.evaluator._is_answer_from_paragraph(
+            "some content",
+            para1_start + 5,
+            para1_start + 16,
+            1  # Wrong paragraph
         ))
 
 
