@@ -324,6 +324,200 @@ class TestSpecificTestScenario(unittest.TestCase):
         self.assertEqual(result['expected_answer'], "custom expected answer")
         self.assertEqual(result['target_paragraph_index'], 0)
 
+class TestExtendedCoverage(unittest.TestCase):
+    """Extended tests to improve code coverage."""
+    
+    def setUp(self):
+        self.evaluator = ParagraphQAEvaluator()
+    
+    def test_logging_initialization(self):
+        """Test that logging is properly initialized."""
+        # This tests the _initialize_logging method indirectly
+        evaluator = ParagraphQAEvaluator()
+        self.assertIsNotNone(evaluator.logger)
+        self.assertEqual(evaluator.logger.name, "__main__")
+    
+    def test_model_loading_failure(self):
+        """Test model loading failure scenarios."""
+        # Test with invalid model name
+        with patch('transformers.pipeline') as mock_pipeline:
+            mock_pipeline.side_effect = Exception("Model not found")
+            result = self.evaluator.load_model()
+            self.assertFalse(result)
+    
+    def test_save_results_success(self):
+        """Test successful result saving."""
+        self.evaluator.create_three_paragraph_document()
+        
+        with patch('builtins.open', unittest.mock.mock_open()) as mock_file:
+            with patch('os.makedirs') as mock_makedirs:
+                result = {
+                    'question': 'test',
+                    'answer': 'test',
+                    'success': True
+                }
+                success = self.evaluator.save_results(result, "test_results.json")
+                
+                self.assertTrue(success)
+                mock_makedirs.assert_called_once()
+                mock_file.assert_called_once_with("test_results.json", 'w', encoding='utf-8')
+    
+    def test_save_results_failure(self):
+        """Test result saving failure."""
+        self.evaluator.create_three_paragraph_document()
+        
+        with patch('builtins.open', side_effect=Exception("File error")):
+            result = {'test': 'data'}
+            success = self.evaluator.save_results(result, "test_results.json")
+            
+            self.assertFalse(success)
+    
+    def test_run_specific_test_with_mock(self):
+        """Test run_specific_test with mocked validation."""
+        self.evaluator.create_three_paragraph_document()
+        
+        # Mock the validate_paragraph_answer method
+        with patch.object(self.evaluator, 'validate_paragraph_answer') as mock_validate:
+            mock_validate.return_value = {
+                'success': True,
+                'score': 0.95,
+                'question': 'What do deep learning models require for training?',
+                'expected_answer': 'substantial computational resources and large labeled datasets',
+                'target_paragraph_index': 1
+            }
+            
+            # Mock the model loading
+            self.evaluator.qa_pipeline = Mock()
+            
+            result = self.evaluator.run_specific_test()
+            
+            self.assertTrue(result['success'])
+            mock_validate.assert_called_once()
+    
+    def test_print_test_report_comprehensive(self):
+        """Test comprehensive report printing."""
+        self.evaluator.create_three_paragraph_document()
+        
+        test_result = {
+            'question': 'Test question?',
+            'expected_answer': 'Test answer',
+            'model_answer': 'Test model answer',
+            'score': 0.85,
+            'answer_position': (100, 120),
+            'target_paragraph_index': 1,
+            'answer_from_target_paragraph': True,
+            'answer_correct': True,
+            'success': True,
+            'context_length': 1000,
+            'paragraph_count': 3
+        }
+        
+        # This should not raise any exceptions
+        self.evaluator.print_test_report(test_result)
+    
+    def test_print_test_report_failure_case(self):
+        """Test report printing for failure case."""
+        self.evaluator.create_three_paragraph_document()
+        
+        test_result = {
+            'question': 'Test question?',
+            'expected_answer': 'Expected answer',
+            'model_answer': 'Wrong answer',
+            'score': 0.45,
+            'answer_position': (50, 60),
+            'target_paragraph_index': 1,
+            'answer_from_target_paragraph': False,
+            'answer_correct': False,
+            'success': False,
+            'context_length': 1000,
+            'paragraph_count': 3
+        }
+        
+        # This should not raise any exceptions
+        self.evaluator.print_test_report(test_result)
+    
+    def test_answer_from_paragraph_text_match(self):
+        """Test answer detection by text content rather than position."""
+        test_paragraphs = [
+            "This is the first paragraph with unique content.",
+            "This is the second paragraph with different content.",
+            "Third paragraph here."
+        ]
+        self.evaluator.create_custom_document(test_paragraphs)
+        
+        # Test that answer text matching works even with wrong positions
+        # The answer "unique content" appears in paragraph 0
+        self.assertTrue(self.evaluator._is_answer_from_paragraph(
+            "unique content",
+            1000,  # Wrong position (out of bounds)
+            1015,  # Wrong position
+            0      # But text appears in paragraph 0
+        ))
+    
+    def test_answer_correctness_edge_cases_comprehensive(self):
+        """Comprehensive edge case testing for answer correctness."""
+        # Single word matches
+        self.assertTrue(self.evaluator._check_answer_correctness(
+            "resources", "computational resources"
+        ))
+        
+        # Partial word matches
+        self.assertTrue(self.evaluator._check_answer_correctness(
+            "computation", "computational"
+        ))
+        
+        # Very short expected answer
+        self.assertTrue(self.evaluator._check_answer_correctness(
+            "AI", "AI technology"
+        ))
+        
+        # Special characters
+        self.assertTrue(self.evaluator._check_answer_correctness(
+            "machine-learning", "machine learning"
+        ))
+
+
+class TestMainFunction(unittest.TestCase):
+    """Test the main function execution."""
+    
+    def test_main_success(self):
+        """Test main function with successful execution."""
+        with patch('src.paragraph_qa_evaluator.ParagraphQAEvaluator') as MockEvaluator:
+            mock_instance = MockEvaluator.return_value
+            mock_instance.load_model.return_value = True
+            mock_instance.run_specific_test.return_value = {'success': True}
+            
+            # Import and run main
+            from src.paragraph_qa_evaluator import main
+            
+            with patch('sys.exit') as mock_exit:
+                main()
+                mock_exit.assert_called_with(0)
+    
+    def test_main_model_load_failure(self):
+        """Test main function when model loading fails."""
+        with patch('src.paragraph_qa_evaluator.ParagraphQAEvaluator') as MockEvaluator:
+            mock_instance = MockEvaluator.return_value
+            mock_instance.load_model.return_value = False
+            
+            from src.paragraph_qa_evaluator import main
+            
+            with patch('sys.exit') as mock_exit:
+                main()
+                mock_exit.assert_called_with(1)
+    
+    def test_main_exception_handling(self):
+        """Test main function exception handling."""
+        with patch('src.paragraph_qa_evaluator.ParagraphQAEvaluator') as MockEvaluator:
+            MockEvaluator.side_effect = Exception("Test exception")
+            
+            from src.paragraph_qa_evaluator import main
+            
+            with patch('sys.exit') as mock_exit:
+                with patch('logging.error') as mock_log:
+                    main()
+                    mock_exit.assert_called_with(1)
+                    mock_log.assert_called()
 
 if __name__ == '__main__':
     unittest.main()
