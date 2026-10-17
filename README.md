@@ -2,18 +2,18 @@
 
 A specialized evaluation framework for testing question-answering models with multi-paragraph documents. This tool specifically validates a model's ability to locate answers within targeted paragraphs when provided with full document context.
 
-## 🚀 Key Features
+## Key Features
 
-- **📄 Multi-Paragraph Testing**: Create documents with multiple paragraphs to test contextual understanding
-- **🎯 Targeted Questioning**: Ask questions designed to target specific paragraphs within documents
-- **✅ Answer Validation**: Comprehensive validation of both answer location and content correctness
-- **🛡️ Robust Error Handling**: Extensive error checking and validation throughout the pipeline
-- **🔧 Flexible Configuration**: Support for custom documents, questions, and evaluation parameters
-- **📊 Detailed Analytics**: Comprehensive reporting with performance metrics and statistics
-- **🧪 Batch Testing**: Run multiple test cases across different documents and domains
-- **⚡ High Test Coverage**: 81% test coverage for core functionality with 39 comprehensive tests
+- **Multi-Paragraph Testing**: Create documents with multiple paragraphs to test contextual understanding
+- **Targeted Questioning**: Ask questions designed to target specific paragraphs within documents
+- **Answer Validation**: Comprehensive validation of both answer location and content correctness
+- **Robust Error Handling**: Extensive error checking and validation throughout the pipeline
+- **Flexible Configuration**: Support for custom documents, questions, and evaluation parameters
+- **Detailed Analytics**: Comprehensive reporting with performance metrics and statistics
+- **Batch Testing**: Run multiple test cases across different documents and domains
+- **High Test Coverage**: 81% test coverage for core functionality with 39 comprehensive tests
 
-## 📋 Problem Statement
+## Problem Statement
 
 This project addresses the specific challenge of evaluating whether QA models can correctly identify answers in designated paragraphs when given complete multi-paragraph documents as context. The evaluation criteria include:
 
@@ -23,7 +23,7 @@ This project addresses the specific challenge of evaluating whether QA models ca
 4. Validating that the model finds the correct answer
 5. Reporting confidence scores and localization accuracy
 
-## 🛠 Installation
+## Installation
 
 ### Prerequisites
 - Python 3.7 or higher
@@ -44,7 +44,7 @@ pip install -r requirements.txt
 - `torch >= 1.9.0` - Deep learning framework
 - `pytest >= 7.0.0` - For running tests (optional)
 
-## 🏁 Quick Start
+## Quick Start
 
 ### Basic Usage
 ```python
@@ -90,7 +90,7 @@ VALIDATION RESULTS:
 🎯 TEST PASSED: Model correctly found answer in target paragraph!
 ```
 
-## 📖 Usage Examples
+## Usage Examples
 
 ### Example 1: Basic Testing
 ```python
@@ -173,7 +173,7 @@ results = tester.run_multiple_tests(test_cases)
 tester.generate_comprehensive_report()
 ```
 
-## 🏗 Project Structure
+## Project Structure
 
 ```
 paragraph_qa_evaluator/
@@ -199,7 +199,7 @@ paragraph_qa_evaluator/
 └── README.md                       # This file
 ```
 
-## 🧪 Testing & Quality
+## Testing & Quality
 
 ### Running Tests
 ```bash
@@ -214,10 +214,10 @@ python -m pytest tests/ --cov=src --cov-report=html
 ```
 
 ### Test Results
-- **✅ 39 tests passing** - Comprehensive test suite
-- **📊 81% coverage** - Core module `paragraph_qa_evaluator.py`
-- **🔍 60% overall coverage** - Including extended functionality
-- **⚡ Fast execution** - Tests complete in under 1 second
+- **39 tests passing** - Comprehensive test suite
+- **81% coverage** - Core module `paragraph_qa_evaluator.py`
+- **60% overall coverage** - Including extended functionality
+- **Fast execution** - Tests complete in under 1 second
 
 ### Test Categories
 - **Unit Tests**: Basic functionality and initialization
@@ -225,7 +225,7 @@ python -m pytest tests/ --cov=src --cov-report=html
 - **Error Handling**: Invalid inputs and edge cases
 - **Validation Tests**: Answer correctness and paragraph detection
 
-## 📊 Evaluation Metrics
+## Evaluation Metrics
 
 The framework evaluates models based on:
 
@@ -235,7 +235,7 @@ The framework evaluates models based on:
 - **Paragraph-specific Performance**: Accuracy per paragraph location
 - **Success Rate**: Overall test success percentage
 
-## 🔧 Configuration
+## Configuration
 
 ### Model Selection
 ```python
@@ -265,7 +265,7 @@ result = evaluator.run_specific_test(
 )
 ```
 
-## 🐛 Error Handling
+## Error Handling
 
 The framework includes comprehensive error handling for:
 
@@ -277,14 +277,14 @@ The framework includes comprehensive error handling for:
 
 All errors are logged with descriptive messages and appropriate fallback behavior.
 
-## 🚀 Performance
+## Performance
 
 - **Fast model loading** with pre-trained transformers
 - **Efficient text processing** with optimized pipelines
 - **Minimal memory footprint** for large documents
 - **Parallel-ready architecture** for batch processing
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
@@ -298,15 +298,3 @@ pip install -r requirements.txt
 # Run tests to verify setup
 python -m pytest tests/ -v
 ```
-
-### Code Quality
-- Follow PEP 8 style guide
-- Include docstrings for all public methods
-- Add tests for new functionality
-- Maintain high test coverage
-
----
-
-**Paragraph QA Evaluator** - Ensuring your QA models find the right answers in the right places! 🎯
-
-*Built with ❤️ using Hugging Face Transformers and Python*
